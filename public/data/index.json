@@ -1,7 +1,11 @@
 {
   "title": "Vefforritunarvefurinn",
-  "description": "Efni um vefforritun.",
+  "description": "Efni um vefforritun. Þú ert á forsíðu",
   "navigation": [
+    {
+      "title": "Forsíða",
+      "slug": ""
+    },
     {
       "title": "HTML",
       "slug": "html"

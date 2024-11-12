@@ -1,35 +1,57 @@
-async function fetchIndex(){
-  const file = 'public/data/index.json';
+import { el } from './lib/elements.js';
+import { renderIndexpage } from './lib/pages/index.js';
+import { renderNavigation } from './lib/components/navigation.js';
+import { renderContentpage } from './lib/pages/content-page.js';
+import { fetcher } from './lib/fetcher.js';
 
-  const response = await fetch(file);
-  const json = await response.json();
 
-  return json;
-}
 
-async function render (root) {
-  const indexJson = await fetchIndex();
-  console.log('rendering', root, indexJson);
+async function renderSubpage(root, indexJson, type) {
+  const headerElement = el('header', {}, el('h1', {}, indexJson.title));
 
-  const headerElement = document.createElement('header');
+  headerElement.appendChild(renderNavigation(indexJson.navigation));
 
-  const h1Element = document.createElement('h1');
-  h1Element.textContent = indexJson.title;
-  headerElement.appendChild(h1Element);
+  let contentString = 'EFNI ER EKKI GILT';
+
+  if (indexJson.navigation.find((i) => i.slug === type)) {
+    contentString = type;
+  }
+
+
+  const contentJsonFile = `data/${type}/index.json`;
+  const contentJson = await fetcher(contentJsonFile);
+
+  const mainElement = el('main', {}, el('p', {}, contentString));
+
+  const footerElement = el('footer', {}, indexJson.footer);
 
   root.appendChild(headerElement);
-
-  const mainElement = document.createElement('main');
   root.appendChild(mainElement);
-
-  const footerElement = document.createElement('footer');
-  const h2Element = document.createElement('h2');
-  h2Element.textContent = indexJson.footer;
-  footerElement.appendChild(h2Element);
   root.appendChild(footerElement);
-
 }
 
-const root = document.querySelector('#app')
+async function render(root, querystring) {
+  const mainIndexJson = await fetcher('data/index.json');
+  
 
-render(root);
+  const params = new URLSearchParams(querystring);
+  const type = params.get('type');
+  const content = params.get('content');
+  
+
+  console.log(type, content);
+
+
+  if (!type) {
+    if (content){
+      renderContentPage(root, mainIndexJson);
+    }
+      renderIndexpage(root, mainIndexJson, contentJson);
+  } else {
+      renderSubpage(root, mainIndexJson, type);
+  }
+}
+
+const root = document.querySelector('#app');
+
+render(root, window.location.search);
