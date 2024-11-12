@@ -1,35 +1,28 @@
-async function fetchIndex(){
-  const file = 'public/data/index.json';
+import { renderIndexPage } from './lib/pages/index.js';
+import { renderContentPage } from './lib/pages/content-page.js';
+import { fetcher } from './lib/fetcher.js';
+import { renderSubpage } from './lib/pages/sub_page.js';
 
-  const response = await fetch(file);
-  const json = await response.json();
+async function render(root, querystring) {
+  const mainIndexJson = await fetcher('data/index.json');
 
-  return json;
+  const params = new URLSearchParams(querystring);
+  const type = params.get('type');
+  const content = params.get('content');
+
+  console.log(type, content);
+
+  if (!type) {
+    return renderIndexPage(root, mainIndexJson);
+  }
+
+  if (content) {
+    return renderContentPage(root, mainIndexJson);
+  }
+
+  renderSubpage(root, mainIndexJson, type);
 }
 
-async function render (root) {
-  const indexJson = await fetchIndex();
-  console.log('rendering', root, indexJson);
+const root = document.querySelector('#app');
 
-  const headerElement = document.createElement('header');
-
-  const h1Element = document.createElement('h1');
-  h1Element.textContent = indexJson.title;
-  headerElement.appendChild(h1Element);
-
-  root.appendChild(headerElement);
-
-  const mainElement = document.createElement('main');
-  root.appendChild(mainElement);
-
-  const footerElement = document.createElement('footer');
-  const h2Element = document.createElement('h2');
-  h2Element.textContent = indexJson.footer;
-  footerElement.appendChild(h2Element);
-  root.appendChild(footerElement);
-
-}
-
-const root = document.querySelector('#app')
-
-render(root);
+render(root, window.location.search);
